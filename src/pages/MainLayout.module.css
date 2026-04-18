@@ -1,0 +1,159 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Top bar ── */
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--c-primary);
+  padding: 0 20px;
+  height: 56px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -1px;
+  margin-right: 4px;
+}
+
+.logoPlus {
+  color: var(--c-accent);
+}
+
+.waiterName {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+}
+
+.offlinePill {
+  background: var(--c-danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  animation: pulse 2s infinite;
+}
+
+.syncPill {
+  background: var(--c-warning);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+.syncPill:hover { opacity: 0.85; }
+
+.logoutBtn {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  border: 0.5px solid rgba(255, 255, 255, 0.25);
+  padding: 6px 14px;
+  border-radius: var(--r-sm);
+  transition: all var(--transition);
+  min-height: 34px;
+}
+.logoutBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ── Alerts ── */
+.alertArea {
+  flex-shrink: 0;
+  padding: 0 16px;
+}
+
+/* ── Offline banner ── */
+.offlineBanner {
+  background: var(--c-warning-bg);
+  border-bottom: 1px solid #fbbf24;
+  color: #92400e;
+  font-size: 13px;
+  padding: 8px 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── Main content ── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Bottom nav ── */
+.bottomNav {
+  display: flex;
+  background: var(--c-card);
+  border-top: 0.5px solid var(--c-border);
+  flex-shrink: 0;
+  height: 64px;
+}
+
+.navItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--c-muted);
+  text-decoration: none;
+  transition: color var(--transition);
+  min-height: 44px;
+}
+
+.navItem.active {
+  color: var(--c-primary);
+  font-weight: 600;
+}
+
+.navItem.active svg {
+  stroke: var(--c-accent);
+}
+
+.cartWrapper {
+  position: relative;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: var(--c-danger);
+  color: #fff;
+  border-radius: 50%;
+  width: 17px;
+  height: 17px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.syncDot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--c-warning);
+  border-radius: 50%;
+}

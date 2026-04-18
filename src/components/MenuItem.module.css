@@ -1,0 +1,143 @@
+.card {
+  background: var(--c-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-xl);
+  padding: 18px;
+  cursor: pointer;
+  position: relative;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.card:hover:not(.unavailable) {
+  border-color: var(--c-accent);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.card:hover:not(.unavailable)::before {
+  opacity: 1;
+}
+
+.card:active:not(.unavailable) {
+  transform: scale(0.96) translateY(0);
+}
+
+/* RNF-09: unavailable state (gris #9ca3af) */
+.unavailable {
+  background: rgba(156, 163, 175, 0.15); /* #9ca3af with opacity */
+  border-color: rgba(156, 163, 175, 0.3);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.unavailBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--c-unavail); /* #9ca3af */
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cartBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--c-info);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.category {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--c-muted);
+  font-weight: 600;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--c-text);
+  line-height: 1.3;
+  margin-top: 2px;
+  letter-spacing: -0.3px;
+}
+
+/* RNF-09: strikethrough for unavailable */
+.nameStrike {
+  text-decoration: line-through;
+  color: var(--c-unavail);
+}
+
+.price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-accent-dark);
+  margin-top: auto;
+}
+
+.unavailable .price {
+  color: var(--c-unavail);
+}
+
+.addBtn {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  background: var(--c-primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  transition: all var(--transition);
+}
+
+.card:hover .addBtn {
+  background: var(--c-accent);
+  color: #fff;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}

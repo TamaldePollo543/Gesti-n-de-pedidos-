@@ -1,0 +1,104 @@
+/* ─── Mesa+ Design System (Premium) ─── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Premium Light/Dark Adaptive Palette */
+  --c-primary: #1e1b4b; /* deep indigo */
+  --c-primary-light: #312e81;
+  --c-accent: #f59e0b; /* vibrant amber */
+  --c-accent-dark: #d97706;
+  --c-surface: #f8fafc; /* smooth slate-50 */
+  --c-card: rgba(255, 255, 255, 0.85); /* glassmorphism base */
+  --c-border: rgba(226, 232, 240, 0.8);
+  --c-border-strong: rgba(148, 163, 184, 0.5);
+
+  --c-muted: #64748b;
+  --c-text: #0f172a;
+
+  --c-danger: #ef4444;
+  --c-danger-bg: #fef2f2;
+  --c-success: #10b981;
+  --c-success-bg: #ecfdf5;
+  --c-warning: #f59e0b;
+  --c-warning-bg: #fffbeb;
+  --c-info: #3b82f6;
+  --c-info-bg: #eff6ff;
+  --c-unavail: #94a3b8;
+
+  --r-sm: 8px;
+  --r-md: 16px; /* softer premium curves */
+  --r-lg: 20px;
+  --r-xl: 28px;
+
+  /* Elevated drop shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.12);
+  --transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--c-surface);
+  /* Subtle gradient background for premium feel */
+  background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0.04) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, hsla(38,92%,50%,0.05) 0px, transparent 50%);
+  color: var(--c-text);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Minimum touch target — RNF-10 */
+button, [role="button"], input, select {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+button { 
+  cursor: pointer; 
+  border: none; 
+  background: none; 
+  font-family: var(--font-body); 
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+input, select, textarea {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--c-text);
+  backdrop-filter: blur(10px);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-border-strong); border-radius: 6px; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(0.97); }
+}
+

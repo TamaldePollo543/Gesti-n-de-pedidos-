@@ -1,0 +1,128 @@
+.page {
+  padding: 14px 16px 20px;
+}
+
+.searchRow {
+  margin-bottom: 12px;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--c-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 11px 40px 11px 38px;
+  border: 0.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  background: var(--c-card);
+  transition: border-color var(--transition);
+  min-height: 44px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--c-accent);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 10px;
+  font-size: 18px;
+  color: var(--c-muted);
+  min-height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Category pills */
+.catPills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.pill {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 0.5px solid var(--c-border);
+  font-size: 13px;
+  background: var(--c-card);
+  color: var(--c-muted);
+  transition: all var(--transition);
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  border-color: var(--c-border-strong);
+  color: var(--c-text);
+}
+
+.pillActive {
+  background: var(--c-primary);
+  color: #fff;
+  border-color: var(--c-primary);
+  font-weight: 500;
+}
+
+/* Grid — RNF-10: 600px min viewport */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 16px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--c-border);
+  border-top-color: var(--c-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 14px;
+  color: var(--c-muted);
+}
+
+.errorText {
+  font-size: 14px;
+  color: var(--c-danger);
+  text-align: center;
+  padding: 0 2rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--c-muted);
+  font-size: 14px;
+}
