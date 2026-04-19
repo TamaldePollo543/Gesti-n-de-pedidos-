@@ -41,10 +41,10 @@
   transform: scale(0.96) translateY(0);
 }
 
-/* RNF-09: unavailable state (gris #9ca3af) */
+/* RNF-09: unavailable state (rojo suave) */
 .unavailable {
-  background: rgba(156, 163, 175, 0.15); /* #9ca3af with opacity */
-  border-color: rgba(156, 163, 175, 0.3);
+  background: #fee2e2;
+  border-color: #fca5a5;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -53,7 +53,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: var(--c-unavail); /* #9ca3af */
+  background: #dc2626;
   color: #fff;
   font-size: 11px;
   font-weight: 600;
@@ -104,7 +104,7 @@
 /* RNF-09: strikethrough for unavailable */
 .nameStrike {
   text-decoration: line-through;
-  color: var(--c-unavail);
+  color: #b91c1c;
 }
 
 .price {
@@ -115,7 +115,14 @@
 }
 
 .unavailable .price {
-  color: var(--c-unavail);
+  color: #b91c1c;
+}
+
+.reason {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #b91c1c;
+  font-weight: 600;
 }
 
 .addBtn {

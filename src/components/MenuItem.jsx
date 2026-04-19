@@ -24,7 +24,7 @@ export default function MenuItem({ item, cartQty, onAdd }) {
       {/* Unavailable badge — RNF-09 */}
       {unavailable && (
         <span className={styles.unavailBadge} aria-label="No disponible">
-          <LockIcon /> Agotado
+          <LockIcon /> No disponible
         </span>
       )}
 
@@ -40,6 +40,10 @@ export default function MenuItem({ item, cartQty, onAdd }) {
         {item.name}
       </h3>
       <span className={styles.price}>${item.price}</span>
+
+      {unavailable && item.unavailableReason && (
+        <p className={styles.reason}>Sin stock: {item.unavailableReason}</p>
+      )}
 
       {!unavailable && (
         <div className={styles.addBtn} aria-hidden="true">+</div>

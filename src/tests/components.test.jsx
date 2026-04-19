@@ -29,9 +29,9 @@ describe('MenuItem', () => {
     expect(onAdd).not.toHaveBeenCalled()
   })
 
-  it('shows Agotado badge for unavailable items (RNF-09)', () => {
+  it('shows No disponible badge for unavailable items (RNF-09)', () => {
     render(<MenuItem item={unavailItem} cartQty={0} onAdd={vi.fn()} />)
-    expect(screen.getByText(/agotado/i)).toBeInTheDocument()
+    expect(screen.getByText(/no disponible/i)).toBeInTheDocument()
   })
 
   it('shows cart quantity badge when in cart', () => {

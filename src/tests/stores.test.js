@@ -78,9 +78,10 @@ describe('menuStore', () => {
   })
 
   it('excludeItem marks item unavailable (RF-02)', () => {
-    act(() => useMenuStore.getState().excludeItem(1))
+    act(() => useMenuStore.getState().excludeItem(1, 'Sin tomate'))
     const item = useMenuStore.getState().items.find(i => i.id === 1)
     expect(item.available).toBe(false)
+    expect(item.unavailableReason).toBe('Sin tomate')
   })
 
   it('restoreItem marks item available (RF-02)', () => {

@@ -15,16 +15,31 @@ export const useMenuStore = create((set, get) => ({
     set({ items, categories })
   },
 
+  upsertItem: (item) =>
+    set((state) => {
+      const next = [...state.items]
+      const index = next.findIndex((i) => String(i.id) === String(item.id))
+      if (index >= 0) {
+        next[index] = { ...next[index], ...item }
+      } else {
+        next.unshift(item)
+      }
+      const categories = ['Todos', ...new Set(next.map((i) => i.category).filter(Boolean))]
+      return { items: next, categories }
+    }),
+
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   setActiveCategory: (cat) => set({ activeCategory: cat }),
   setSearchQuery: (q) => set({ searchQuery: q }),
 
   // RF-02: llamado de forma síncrona por el manejador de eventos del socket (RNF-01 ≤2s)
-  excludeItem: (itemId) =>
+  excludeItem: (itemId, reason) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === itemId ? { ...item, available: false } : item
+        String(item.id) === String(itemId)
+          ? { ...item, available: false, unavailableReason: reason || item.unavailableReason || 'Sin ingredientes' }
+          : item
       ),
     })),
 
@@ -32,7 +47,9 @@ export const useMenuStore = create((set, get) => ({
   restoreItem: (itemId) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === itemId ? { ...item, available: true } : item
+        String(item.id) === String(itemId)
+          ? { ...item, available: true, unavailableReason: undefined }
+          : item
       ),
     })),
 

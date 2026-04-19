@@ -3,6 +3,19 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://cohlhobfkbzpqtcaqqxb.supabase.co/functions/v1',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+    watch: {
+      ignored: ['**/coverage/**'],
+    },
+  },
   plugins: [
     react(),
     VitePWA({

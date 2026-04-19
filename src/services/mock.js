@@ -28,6 +28,7 @@ const db = {
 let mockId = 1000
 
 export function setupMock() {
+  window.__MESA_PLUS_MOCK__ = true
   const mock = new MockAdapter(apiClient, { delayResponse: 800 })
 
   console.info('[Mock] Módulo Backend Simulado Iniciado')
@@ -53,6 +54,41 @@ export function setupMock() {
     return [200, db.menu.filter(item => item.available)]
   })
 
+  mock.onGet(/\/menu-items\?limit=\d+/).reply(() => {
+    return [200, { data: db.menu, total: db.menu.length, page: 1, limit: db.menu.length }]
+  })
+
+  mock.onPatch(/\/menu-items\/[^/]+\/availability/).reply((config) => {
+    const id = config.url.split('/')[2]
+    const body = JSON.parse(config.data)
+    const item = db.menu.find((m) => String(m.id) === String(id))
+    if (!item) return [404, { message: 'Item no encontrado' }]
+
+    item.available = !!body.available
+    if (!item.available) {
+      const affected = db.orders.filter(
+        (o) =>
+          (o.status === 'pendiente' || o.status === 'en_preparacion') &&
+          (o.items || []).some((i) => String(i.id) === String(item.id))
+      ).length
+
+      window.emitMockSocketEvent?.('item_excluded', {
+        item_id: item.id,
+        item_name: item.name,
+        reason: body.reason,
+        affected_orders_count: affected,
+      })
+
+      return [200, { data: { ...item, affected_orders_count: affected } }]
+    }
+
+    window.emitMockSocketEvent?.('item_restored', {
+      item_id: item.id,
+      item_name: item.name,
+    })
+    return [200, { data: item }]
+  })
+
   // RF-04: Create Order
   mock.onPost('/orders').reply(async (config) => {
     const orderData = JSON.parse(config.data)
@@ -64,6 +100,8 @@ export function setupMock() {
       created_at: new Date().toISOString()
     }
     db.orders.push(newOrder)
+
+    window.emitMockSocketEvent?.('order_created', { order: newOrder })
 
     // Simular avance en cocina (Pendiente -> En_preparacion -> Listo)
     setTimeout(() => {
@@ -86,5 +124,28 @@ export function setupMock() {
   // RF-05: Get Waiter Orders
   mock.onGet(/\/orders\?waiter_id=\d+/).reply((config) => {
     return [200, db.orders]
+  })
+
+  mock.onGet('/orders?active=true').reply(() => {
+    const active = db.orders.filter((o) => ['pendiente', 'en_preparacion', 'listo'].includes(o.status))
+    return [200, active]
+  })
+
+  mock.onGet('/orders').reply(() => {
+    return [200, db.orders]
+  })
+
+  mock.onPatch(/\/orders\/[^/]+\/status/).reply((config) => {
+    const id = config.url.split('/')[2]
+    const body = JSON.parse(config.data)
+    const order = db.orders.find((o) => String(o.id) === String(id))
+    if (!order) return [404, { message: 'Pedido no encontrado' }]
+
+    order.status = body.status
+    window.emitMockSocketEvent?.('order_status_update', {
+      order_id: order.id,
+      status: order.status,
+    })
+    return [200, order]
   })
 }

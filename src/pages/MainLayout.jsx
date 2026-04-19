@@ -9,6 +9,7 @@ import { menuAPI } from '../services/api'
 import { useMenuStore } from '../store/menuStore'
 import AlertBanner from '../components/AlertBanner'
 import styles from './MainLayout.module.css'
+import { canManageKitchen } from '../utils/roles'
 
 export default function MainLayout() {
   const navigate = useNavigate()
@@ -20,6 +21,7 @@ export default function MainLayout() {
   const isOnline = useOnlineStatus()
   const setItems = useMenuStore((s) => s.setItems)
   const setLoading = useMenuStore((s) => s.setLoading)
+  const isKitchenUser = canManageKitchen(waiter?.role)
 
   // Cargar menú al iniciar
   useEffect(() => {
@@ -91,6 +93,13 @@ export default function MainLayout() {
 
       {/* ── Bottom nav (tablet-optimised) ── */}
       <nav className={styles.bottomNav}>
+        {isKitchenUser && (
+          <NavLink to="/cocina" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3h18v4H3z"/><path d="M6 7v11a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V7"/><path d="M9 12h6"/></svg>
+            Cocina
+          </NavLink>
+        )}
+
         <NavLink to="/menu" className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
           Menú

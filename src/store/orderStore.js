@@ -23,13 +23,28 @@ export const useOrderStore = create((set, get) => ({
   isLoading: false,
   offlineQueue: [],    // IDs de pedidos pendientes de sincronización
 
+  setOrders: (orders) => set({ orders }),
+
+  addOrUpdateOrder: (incomingOrder) =>
+    set((state) => {
+      const index = state.orders.findIndex((o) => String(o.id) === String(incomingOrder.id))
+      if (index >= 0) {
+        const next = [...state.orders]
+        next[index] = { ...next[index], ...incomingOrder }
+        return { orders: next }
+      }
+
+      return { orders: [incomingOrder, ...state.orders] }
+    }),
+
   // ── Cargar pedidos existentes ──────────────────────────────────────────────
   loadOrders: async () => {
     const { waiter } = useAuthStore.getState()
     set({ isLoading: true })
     try {
       const res = await ordersAPI.getMyOrders(waiter.id)
-      set({ orders: res.data })
+      const list = Array.isArray(res.data) ? res.data : Array.isArray(res.data?.data) ? res.data.data : []
+      set({ orders: list })
     } catch {
       // Offline — cargar desde la cola en IndexedDB
       const queued = await getAllQueued()

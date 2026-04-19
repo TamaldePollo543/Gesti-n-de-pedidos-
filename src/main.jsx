@@ -5,8 +5,9 @@ import App from './App'
 import './styles/global.css'
 import { setupMock } from './services/mock'
 
-// Iniciar el backend simulado
-setupMock()
+if (import.meta.env.VITE_USE_MOCK === 'true') {
+  setupMock()
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
