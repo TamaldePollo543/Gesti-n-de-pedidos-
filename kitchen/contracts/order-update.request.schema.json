@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mesa-plus.local/schemas/order-update.request.schema.json",
+  "title": "Order Update Request",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name", "qty"],
+        "properties": {
+          "id": { "type": ["string", "number", "null"] },
+          "name": { "type": "string", "minLength": 1 },
+          "qty": { "type": "integer", "minimum": 1 },
+          "price": { "type": ["number", "integer", "null"] },
+          "notes": { "type": ["string", "null"] },
+          "extras": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": []
+          },
+          "exclusions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": []
+          },
+          "allergyNotes": { "type": ["string", "null"] },
+          "kitchenNotes": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "required": ["items"]
+}

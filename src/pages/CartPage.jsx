@@ -2,12 +2,26 @@
 // RF-04: POST /orders on confirm
 // RNF-08: ≤3 touch interactions to complete flow
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useCartStore } from '../store/cartStore'
 import { useOrderStore } from '../store/orderStore'
 import { useOnlineStatus } from '../hooks/useOnlineStatus'
 import styles from './CartPage.module.css'
 
 const TABLES = ['Mesa 1','Mesa 2','Mesa 3','Mesa 4','Mesa 5','Mesa 6','Mesa 7','Mesa 8','Mesa 9','Mesa 10','Mesa 11','Mesa 12']
+
+function listToCsv(value) {
+  if (!Array.isArray(value) || value.length === 0) return ''
+  return value.join(', ')
+}
+
+function csvToList(value) {
+  if (!value || typeof value !== 'string') return []
+  return value
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean)
+}
 
 export default function CartPage() {
   const navigate = useNavigate()
@@ -16,12 +30,45 @@ export default function CartPage() {
     items, tableId, customerName,
     setTableId, setCustomerName,
     incrementQty, decrementQty, removeItem,
+    updateItemDetails,
     clearCart, getTotal, isValid,
   } = useCartStore()
   const createOrder = useOrderStore((s) => s.createOrder)
+  const [editItemId, setEditItemId] = useState(null)
+  const [extrasText, setExtrasText] = useState('')
+  const [exclusionsText, setExclusionsText] = useState('')
+  const [allergyNotes, setAllergyNotes] = useState('')
+  const [kitchenNotes, setKitchenNotes] = useState('')
 
   const total = getTotal()
   const valid = isValid()
+
+  const openEditItem = (item) => {
+    setEditItemId(item.id)
+    setExtrasText(listToCsv(item.extras))
+    setExclusionsText(listToCsv(item.exclusions))
+    setAllergyNotes(item.allergyNotes || item.allergy_notes || '')
+    setKitchenNotes(item.kitchenNotes || item.notes || '')
+  }
+
+  const closeEditItem = () => {
+    setEditItemId(null)
+    setExtrasText('')
+    setExclusionsText('')
+    setAllergyNotes('')
+    setKitchenNotes('')
+  }
+
+  const saveEditItem = () => {
+    if (!editItemId) return
+    updateItemDetails(editItemId, {
+      extras: csvToList(extrasText),
+      exclusions: csvToList(exclusionsText),
+      allergyNotes: allergyNotes.trim(),
+      kitchenNotes: kitchenNotes.trim(),
+    })
+    closeEditItem()
+  }
 
   const handleConfirm = async () => {
     if (!valid) return
@@ -79,6 +126,18 @@ export default function CartPage() {
               <div className={styles.itemInfo}>
                 <span className={styles.itemName}>{item.name}</span>
                 <span className={styles.itemUnit}>${item.price} c/u</span>
+                {Array.isArray(item.extras) && item.extras.length > 0 && (
+                  <span className={styles.itemNote}>Extras: {item.extras.join(', ')}</span>
+                )}
+                {Array.isArray(item.exclusions) && item.exclusions.length > 0 && (
+                  <span className={styles.itemNote}>Sin: {item.exclusions.join(', ')}</span>
+                )}
+                {(item.allergyNotes || item.allergy_notes) && (
+                  <span className={styles.itemAlert}>Alergia: {item.allergyNotes || item.allergy_notes}</span>
+                )}
+                {(item.kitchenNotes || item.notes) && (
+                  <span className={styles.itemNote}>Nota: {item.kitchenNotes || item.notes}</span>
+                )}
               </div>
               <div className={styles.qtyControls}>
                 <button
@@ -94,6 +153,11 @@ export default function CartPage() {
                 >+</button>
               </div>
               <span className={styles.itemTotal}>${item.price * item.qty}</span>
+              <button
+                className={styles.editBtn}
+                onClick={() => openEditItem(item)}
+                aria-label={`Editar ${item.name}`}
+              >✎</button>
               <button
                 className={styles.removeBtn}
                 onClick={() => removeItem(item.id)}
@@ -120,6 +184,52 @@ export default function CartPage() {
 
       {!valid && (
         <p className={styles.hint}>Selecciona mesa o ingresa un nombre de cliente.</p>
+      )}
+
+      {editItemId && (
+        <div className={styles.modalBackdrop}>
+          <div className={styles.modal}>
+            <h3>Editar ítem</h3>
+            <p>Agrega extras, exclusiones y notas para cocina/alergias.</p>
+
+            <label className={styles.label}>Extras (coma separado)</label>
+            <input
+              className={styles.input}
+              value={extrasText}
+              onChange={(e) => setExtrasText(e.target.value)}
+              placeholder="Ej. extra queso, extra salsa"
+            />
+
+            <label className={styles.label}>Excluir ingredientes (coma separado)</label>
+            <input
+              className={styles.input}
+              value={exclusionsText}
+              onChange={(e) => setExclusionsText(e.target.value)}
+              placeholder="Ej. cebolla, nuez"
+            />
+
+            <label className={styles.label}>Alergias</label>
+            <input
+              className={styles.input}
+              value={allergyNotes}
+              onChange={(e) => setAllergyNotes(e.target.value)}
+              placeholder="Ej. alergia a cacahuate"
+            />
+
+            <label className={styles.label}>Nota adicional</label>
+            <input
+              className={styles.input}
+              value={kitchenNotes}
+              onChange={(e) => setKitchenNotes(e.target.value)}
+              placeholder="Ej. cocción término medio"
+            />
+
+            <div className={styles.modalActions}>
+              <button onClick={closeEditItem}>Cancelar</button>
+              <button onClick={saveEditItem}>Guardar</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

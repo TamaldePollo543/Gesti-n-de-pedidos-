@@ -1,0 +1,51 @@
+{
+  "createOrderRequest": {
+    "table_id": "Mesa 3",
+    "customer_name": "Laura",
+    "items": [
+      {
+        "id": 101,
+        "name": "Pizza de pepperoni",
+        "qty": 2,
+        "price": 230,
+        "notes": "Extras: extra queso | Sin: cebolla | Alergia: lactosa | Nota: cortar en 12"
+      }
+    ]
+  },
+  "updateOrderRequest": {
+    "items": [
+      {
+        "id": 101,
+        "name": "Pizza de pepperoni",
+        "qty": 1,
+        "price": 230,
+        "notes": "Extras: queso, champinon | Sin: cebolla | Alergia: lactosa | Nota: sin picante"
+      },
+      {
+        "name": "Agua mineral",
+        "qty": 1,
+        "price": 40,
+        "notes": "Nota: sin hielo"
+      }
+    ]
+  },
+  "orderResponse": {
+    "id": "24bf9194-bb04-49ec-b1c7-e32bd91df9ea",
+    "status": "en_preparacion",
+    "table_id": "Mesa 3",
+    "customer_name": "Laura",
+    "items": [
+      {
+        "id": 101,
+        "name": "Pizza de pepperoni",
+        "qty": 1,
+        "price": 230,
+        "extras": ["queso", "champinon"],
+        "exclusions": ["cebolla"],
+        "allergy_notes": "lactosa",
+        "kitchen_notes": "sin picante",
+        "notes": "Extras: queso, champinon | Sin: cebolla | Alergia: lactosa | Nota: sin picante"
+      }
+    ]
+  }
+}

@@ -38,6 +38,13 @@ export const useCartStore = create((set, get) => ({
       ),
     })),
 
+  updateItemDetails: (itemId, patch) =>
+    set((state) => ({
+      items: state.items.map((i) =>
+        i.id === itemId ? { ...i, ...patch } : i
+      ),
+    })),
+
   decrementQty: (itemId) => {
     const item = get().items.find((i) => i.id === itemId)
     if (!item) return

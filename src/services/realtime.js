@@ -58,6 +58,12 @@ function handleItemRestored({ item_id }) {
   useMenuStore.getState().restoreItem(item_id)
 }
 
+function handleMenuItemUpsert(payload = {}) {
+  const item = payload?.item || payload?.menu_item || payload
+  if (!item?.id) return
+  useMenuStore.getState().upsertItem(item)
+}
+
 function handleOrderStatusUpdate({ order_id, status }) {
   useOrderStore.getState().updateOrderStatus(order_id, status)
 
@@ -94,6 +100,9 @@ class MockRealtimeAdapter {
     window.emitMockSocketEvent = (event, payload) => {
       if (event === 'item_excluded') handleItemExcluded(payload)
       if (event === 'item_restored') handleItemRestored(payload)
+      if (event === 'menu_item_created' || event === 'item_created' || event === 'menu_item_updated') {
+        handleMenuItemUpsert(payload)
+      }
       if (event === 'order_status_update') handleOrderStatusUpdate(payload)
       if (event === 'order_created') handleOrderCreated(payload)
     }
@@ -154,6 +163,18 @@ class SupabaseRealtimeAdapter {
         this._handleItemRestored(payload)
       })
 
+      menuChannel.on('broadcast', { event: 'menu_item_created' }, ({ payload }) => {
+        this._handleMenuItemUpsert(payload)
+      })
+
+      menuChannel.on('broadcast', { event: 'menu_item_updated' }, ({ payload }) => {
+        this._handleMenuItemUpsert(payload)
+      })
+
+      menuChannel.on('broadcast', { event: 'item_created' }, ({ payload }) => {
+        this._handleMenuItemUpsert(payload)
+      })
+
       menuChannel.on('broadcast', { event: 'order_created' }, ({ payload }) => {
         this._handleOrderCreated(payload)
       })
@@ -202,6 +223,10 @@ class SupabaseRealtimeAdapter {
 
   _handleOrderCreated(payload) {
     handleOrderCreated(payload)
+  }
+
+  _handleMenuItemUpsert(payload) {
+    handleMenuItemUpsert(payload)
   }
 
   async disconnect() {
@@ -274,6 +299,18 @@ class SocketIOAdapter {
           this._handleItemRestored(payload)
         })
 
+        this.socket.on('menu_item_created', (payload) => {
+          this._handleMenuItemUpsert(payload)
+        })
+
+        this.socket.on('menu_item_updated', (payload) => {
+          this._handleMenuItemUpsert(payload)
+        })
+
+        this.socket.on('item_created', (payload) => {
+          this._handleMenuItemUpsert(payload)
+        })
+
         this.socket.on('order_status_update', (payload) => {
           this._handleOrderStatusUpdate(payload)
         })
@@ -302,6 +339,10 @@ class SocketIOAdapter {
 
   _handleOrderCreated(payload) {
     handleOrderCreated(payload)
+  }
+
+  _handleMenuItemUpsert(payload) {
+    handleMenuItemUpsert(payload)
   }
 
   disconnect() {

@@ -25,6 +25,12 @@ export const useOrderStore = create((set, get) => ({
 
   setOrders: (orders) => set({ orders }),
 
+  removeOrder: (orderId) =>
+    set((state) => ({
+      orders: state.orders.filter((o) => String(o.id) !== String(orderId)),
+      offlineQueue: state.offlineQueue.filter((id) => String(id) !== String(orderId)),
+    })),
+
   addOrUpdateOrder: (incomingOrder) =>
     set((state) => {
       const index = state.orders.findIndex((o) => String(o.id) === String(incomingOrder.id))
@@ -84,7 +90,15 @@ export const useOrderStore = create((set, get) => ({
       const serverOrder = res.data
       set((state) => ({
         orders: state.orders.map((o) =>
-          o.id === order.id ? { ...serverOrder, status: ORDER_STATUSES.PENDING } : o
+          o.id === order.id
+            ? {
+                ...serverOrder,
+                items: Array.isArray(serverOrder?.items) && serverOrder.items.length > 0
+                  ? serverOrder.items
+                  : order.items,
+                status: ORDER_STATUSES.PENDING,
+              }
+            : o
         ),
       }))
       return { success: true, offline: false, order: serverOrder }
@@ -101,6 +115,13 @@ export const useOrderStore = create((set, get) => ({
     set((state) => ({
       orders: state.orders.map((o) =>
         o.id === orderId ? { ...o, status } : o
+      ),
+    })),
+
+  updateOrderData: (orderId, patch) =>
+    set((state) => ({
+      orders: state.orders.map((o) =>
+        String(o.id) === String(orderId) ? { ...o, ...patch } : o
       ),
     })),
 

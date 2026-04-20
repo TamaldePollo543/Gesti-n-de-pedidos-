@@ -23,20 +23,32 @@ export default function MainLayout() {
   const setLoading = useMenuStore((s) => s.setLoading)
   const isKitchenUser = canManageKitchen(waiter?.role)
 
-  // Cargar menú al iniciar
+  // Cargar menú al iniciar y refrescarlo periodicamente para detectar nuevos items.
   useEffect(() => {
-    const fetchMenu = async () => {
-      setLoading(true)
+    let mounted = true
+
+    const fetchMenu = async (showLoading = false) => {
+      if (showLoading) setLoading(true)
       try {
         const res = await menuAPI.getMenu()
-        setItems(res.data)
+        if (mounted) setItems(res.data)
       } catch {
         // Offline — el menú puede que ya esté guardado desde la sesión pasada
       } finally {
-        setLoading(false)
+        if (showLoading && mounted) setLoading(false)
       }
     }
-    fetchMenu()
+
+    fetchMenu(true)
+
+    const refreshTimer = setInterval(() => {
+      fetchMenu(false)
+    }, 5000)
+
+    return () => {
+      mounted = false
+      clearInterval(refreshTimer)
+    }
   }, [setItems, setLoading])
 
   const handleLogout = () => {

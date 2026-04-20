@@ -1,0 +1,52 @@
+### 1) Login
+POST http://localhost:5176/api/auth-login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### 2) Crear pedido con customizaciones
+POST http://localhost:5176/api/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "table_id": "Mesa 3",
+  "customer_name": "Prueba Integracion",
+  "items": [
+    {
+      "id": 101,
+      "name": "Pizza de pepperoni",
+      "qty": 1,
+      "price": 230,
+      "notes": "Extras: extra queso | Sin: cebolla | Alergia: lactosa | Nota: sin picante"
+    }
+  ]
+}
+
+### 3) Ver pedidos activos
+GET http://localhost:5176/api/orders?active=true
+Authorization: Bearer {{token}}
+
+### 4) Editar pedido (debe responder 200 si backend ya implementado)
+PATCH http://localhost:5176/api/orders/{{orderId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "id": 101,
+      "name": "Pizza de pepperoni",
+      "qty": 2,
+      "price": 230,
+      "notes": "Extras: extra queso, champinon | Sin: cebolla | Alergia: lactosa | Nota: corte en 8"
+    }
+  ]
+}
+
+### 5) Validar reflejo en GET
+GET http://localhost:5176/api/orders?active=true
+Authorization: Bearer {{token}}

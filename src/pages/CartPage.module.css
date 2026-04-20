@@ -89,6 +89,17 @@
   color: var(--c-muted);
 }
 
+.itemNote {
+  font-size: 12px;
+  color: var(--c-muted);
+}
+
+.itemAlert {
+  font-size: 12px;
+  color: #991b1b;
+  font-weight: 700;
+}
+
 .qtyControls {
   display: flex;
   align-items: center;
@@ -125,6 +136,22 @@
   color: var(--c-accent-dark);
   min-width: 55px;
   text-align: right;
+}
+
+.editBtn {
+  font-size: 16px;
+  color: var(--c-muted);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  transition: color var(--transition);
+}
+
+.editBtn:hover {
+  color: var(--c-primary);
 }
 
 .removeBtn {
@@ -205,3 +232,47 @@
   transition: opacity var(--transition);
 }
 .goMenu:hover { opacity: 0.85; }
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: grid;
+  place-items: center;
+  z-index: 120;
+}
+
+.modal {
+  width: min(560px, calc(100vw - 24px));
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.modal h3,
+.modal p {
+  margin: 0;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modalActions button {
+  min-height: 40px;
+  border-radius: var(--r-sm);
+  border: 0.5px solid var(--c-border);
+  background: var(--c-surface);
+  padding: 8px 12px;
+  font-weight: 600;
+}
+
+.modalActions button:last-child {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}

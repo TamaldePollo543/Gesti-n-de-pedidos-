@@ -6,7 +6,10 @@ import styles from './LoginPage.module.css'
 
 function normalizeAuthPayload(payload, fallbackEmail) {
   const raw = payload?.data ?? payload
-  const token = raw?.token?.access_token || raw?.token || raw?.access_token
+  const tokenObj = raw?.token && typeof raw.token === 'object' ? raw.token : null
+  const token = tokenObj?.access_token || raw?.token || raw?.access_token
+  const refreshToken = tokenObj?.refresh_token || raw?.refresh_token || null
+  const expiresIn = tokenObj?.expires_in || raw?.expires_in || null
   const user = raw?.user || raw?.waiter || {}
   const fallbackName = (fallbackEmail || '')
     .split('@')[0]
@@ -16,6 +19,8 @@ function normalizeAuthPayload(payload, fallbackEmail) {
 
   return {
     token,
+    refreshToken,
+    expiresIn,
     waiter: {
       id: user.id || user.user_id || user.uid || user.waiter_id,
       name: user.name || user.full_name || fallbackName,
@@ -39,13 +44,13 @@ export default function LoginPage() {
 
     try {
       const res = await authAPI.login({ email, password })
-      const { token, waiter } = normalizeAuthPayload(res.data, email)
+      const { token, waiter, refreshToken, expiresIn } = normalizeAuthPayload(res.data, email)
 
       if (!token || !waiter?.id) {
         throw new Error('Respuesta de autenticacion invalida')
       }
 
-      login(token, waiter)
+      login(token, waiter, { refreshToken, expiresIn })
       navigate('/menu', { replace: true })
     } catch (err) {
       let msg = 'Credenciales incorrectas'

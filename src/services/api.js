@@ -8,8 +8,12 @@ const BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
   'https://api.mesaplus.local/v1'
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 const USE_DIRECT_SUPABASE_MENU = import.meta.env.VITE_USE_DIRECT_SUPABASE_MENU === 'true'
 const ENABLE_ORDERS_API = import.meta.env.VITE_ENABLE_ORDERS_API === 'true'
+const ENABLE_ORDER_EDIT_API = import.meta.env.VITE_ENABLE_ORDER_EDIT_API === 'true'
+let refreshPromise = null
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -28,6 +32,41 @@ function ordersUnavailableError() {
   const error = new Error('Orders API no disponible en este entorno')
   error.response = { status: 503 }
   return error
+}
+
+async function refreshAccessToken() {
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    throw new Error('Supabase auth refresh no configurado')
+  }
+
+  const { refreshToken } = useAuthStore.getState()
+  if (!refreshToken) {
+    throw new Error('No existe refresh token')
+  }
+
+  const url = `${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`
+  const response = await axios.post(
+    url,
+    { refresh_token: refreshToken },
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        'Content-Type': 'application/json',
+      },
+      timeout: 8000,
+    }
+  )
+
+  const nextAccessToken = response?.data?.access_token
+  const nextRefreshToken = response?.data?.refresh_token
+  const expiresIn = response?.data?.expires_in
+
+  if (!nextAccessToken) {
+    throw new Error('No se recibio access_token al refrescar sesion')
+  }
+
+  useAuthStore.getState().setSessionTokens(nextAccessToken, nextRefreshToken, expiresIn)
+  return nextAccessToken
 }
 
 // ── Request interceptor: attach JWT + waiter_id + timestamp ──────────────────
@@ -53,11 +92,28 @@ apiClient.interceptors.request.use((config) => {
 // ── Response interceptor: handle 401/403 ─────────────────────────────────────
 apiClient.interceptors.response.use(
   (res) => res,
-  (error) => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout()
-      window.location.href = '/login'
+  async (error) => {
+    const originalRequest = error.config
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      try {
+        if (!refreshPromise) {
+          refreshPromise = refreshAccessToken().finally(() => {
+            refreshPromise = null
+          })
+        }
+
+        const newToken = await refreshPromise
+        originalRequest.headers = originalRequest.headers || {}
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+        return apiClient(originalRequest)
+      } catch {
+        useAuthStore.getState().logout()
+        window.location.href = '/login'
+      }
     }
+
     // RNF-11: 403 means role restriction — caller decides how to surface it
     return Promise.reject(error)
   }
@@ -107,10 +163,83 @@ function normalizeOrdersResponse(payload) {
   const raw = unwrapPayload(payload)
   const list = Array.isArray(raw) ? raw : Array.isArray(raw?.orders) ? raw.orders : []
 
+  const parseNoteSegment = (notes, label) => {
+    if (!notes || typeof notes !== 'string') return ''
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const match = notes.match(new RegExp(`${escaped}:\\s*([^|]+)`, 'i'))
+    return (match?.[1] || '').trim()
+  }
+
+  const splitCsv = (value) =>
+    String(value || '')
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean)
+
+  const normalizeOrderItem = (item = {}) => {
+    const notes = item.notes || item.kitchenNotes || item.kitchen_notes || ''
+    const extras = Array.isArray(item.extras)
+      ? item.extras
+      : splitCsv(parseNoteSegment(notes, 'Extras'))
+    const exclusions = Array.isArray(item.exclusions)
+      ? item.exclusions
+      : splitCsv(parseNoteSegment(notes, 'Sin'))
+    const allergyFromNote = parseNoteSegment(notes, 'Alergia')
+    const allergy = item.allergyNotes || item.allergy_notes || allergyFromNote || ''
+    const kitchenNoteFromText = parseNoteSegment(notes, 'Nota')
+
+    return {
+      ...item,
+      name: item.name || item.item_name || 'Ítem',
+      qty: Number(item.qty || item.quantity || 1),
+      extras,
+      exclusions,
+      allergyNotes: allergy,
+      allergy_notes: allergy,
+      kitchenNotes: item.kitchenNotes || item.kitchen_notes || kitchenNoteFromText || notes,
+      notes,
+    }
+  }
+
   return list.map((order) => ({
     ...order,
-    items: Array.isArray(order.items) ? order.items : [],
+    items: Array.isArray(order.items) ? order.items.map(normalizeOrderItem) : [],
   }))
+}
+
+function buildItemNotes(item = {}) {
+  const extras = Array.isArray(item.extras) ? item.extras : []
+  const exclusions = Array.isArray(item.exclusions) ? item.exclusions : []
+  const allergy = String(item.allergyNotes || item.allergy_notes || '').trim()
+  const kitchenNote = String(item.kitchenNotes || item.kitchen_notes || item.notes || '').trim()
+  const parts = []
+
+  if (extras.length > 0) parts.push(`Extras: ${extras.join(', ')}`)
+  if (exclusions.length > 0) parts.push(`Sin: ${exclusions.join(', ')}`)
+  if (allergy) parts.push(`Alergia: ${allergy}`)
+  if (kitchenNote) parts.push(`Nota: ${kitchenNote}`)
+
+  return parts.join(' | ')
+}
+
+function serializeOrderItemsForApi(items = []) {
+  if (!Array.isArray(items)) return []
+  return items.map((item = {}) => ({
+    id: item.id,
+    name: item.name,
+    price: Number(item.price || 0),
+    qty: Math.max(1, Number(item.qty || item.quantity || 1)),
+    notes: buildItemNotes(item),
+  }))
+}
+
+function serializeOrderPayloadForApi(payload = {}) {
+  if (!payload || typeof payload !== 'object') return payload
+  if (!Array.isArray(payload.items)) return payload
+  return {
+    ...payload,
+    items: serializeOrderItemsForApi(payload.items),
+  }
 }
 
 export const menuAPI = {
@@ -190,16 +319,25 @@ export const ordersAPI = {
   // RF-04: POST /orders — API retransmits to kitchen visualizer
   createOrder: async (order) => {
     if (!ENABLE_ORDERS_API) throw ordersUnavailableError()
-    const response = await apiClient.post('/orders', order)
+    const response = await apiClient.post('/orders', serializeOrderPayloadForApi(order))
     return {
       ...response,
       data: unwrapPayload(response.data),
     }
   },
   // RF-05: get own orders (RNF-11: waiter sees only their own)
-  getMyOrders: (waiterId) => {
+  getMyOrders: async (waiterId) => {
     if (!ENABLE_ORDERS_API) throw ordersUnavailableError()
-    return apiClient.get(`/orders?waiter_id=${waiterId}`)
+    try {
+      const response = await apiClient.get(`/orders?waiter_id=${waiterId}`)
+      return { data: normalizeOrdersResponse(response.data) }
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        const response = await apiClient.get('/orders')
+        return { data: normalizeOrdersResponse(response.data) }
+      }
+      throw error
+    }
   },
 
   getActiveOrders: async () => {
@@ -243,5 +381,41 @@ export const ordersAPI = {
       }
       throw error
     }
+  },
+
+  updateOrder: async (orderId, payload, dbId) => {
+    if (!ENABLE_ORDERS_API) throw ordersUnavailableError()
+    if (!ENABLE_ORDER_EDIT_API) {
+      const disabledError = new Error('Edicion remota de pedidos deshabilitada en este entorno')
+      disabledError.response = { status: 404 }
+      throw disabledError
+    }
+    const safePayload = serializeOrderPayloadForApi(payload)
+
+    const candidateIds = [dbId, orderId].filter(Boolean)
+
+    for (const id of candidateIds) {
+      try {
+        return await apiClient.patch(`/orders/${id}`, safePayload)
+      } catch (error) {
+        if (![404, 422].includes(error?.response?.status)) throw error
+      }
+
+      try {
+        return await apiClient.put(`/orders/${id}`, safePayload)
+      } catch (error) {
+        if (![404, 422].includes(error?.response?.status)) throw error
+      }
+
+      try {
+        return await apiClient.patch(`/orders/${id}/update`, safePayload)
+      } catch (error) {
+        if (![404, 422].includes(error?.response?.status)) throw error
+      }
+    }
+
+    const notFoundError = new Error('No se encontro endpoint de actualizacion de pedidos')
+    notFoundError.response = { status: 404 }
+    throw notFoundError
   },
 }
